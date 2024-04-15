@@ -983,6 +983,19 @@ static PyObject *Consumer_poll (Handle *self, PyObject *args,
         if (!rkm)
                 Py_RETURN_NONE;
 
+        /* consumer_poll() will return either a proper message
+        * or a consumer error (rkm->err is set). */
+        if (rkm->err) {
+                /* Consumer errors are generally to be considered
+                * informational as the consumer will automatically
+                * try to recover from all types of errors. */
+                // fprintf(stderr, "%% Consumer error: %s\n",
+                // rd_kafka_message_errstr(rkm));
+                PyErr_SetString(PyExc_RuntimeError,
+                                "%% Consumer [Poll] error: %s\n",
+                                rd_kafka_message_errstr(rkm));
+        }
+
         msgobj = Message_new0(self, rkm);
 #ifdef RD_KAFKA_V_HEADERS
         /** Have to detach headers outside Message_new0 because it declares the
@@ -1068,7 +1081,7 @@ static PyObject *Consumer_consume (Handle *self, PyObject *args,
         if (n < 0) {
                 free(rkmessages);
                 cfl_PyErr_Format(rd_kafka_last_error(),
-                                 "%s", rd_kafka_err2str(rd_kafka_last_error()));
+                                 "Custom [rd_kafka_consume_batch_queue] Error %s", rd_kafka_err2str(rd_kafka_last_error()));
                 return NULL;
         }
 
