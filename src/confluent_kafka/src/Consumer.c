@@ -992,8 +992,7 @@ static PyObject *Consumer_poll (Handle *self, PyObject *args,
                 // fprintf(stderr, "%% Consumer error: %s\n",
                 // rd_kafka_message_errstr(rkm));
                 PyErr_SetString(PyExc_RuntimeError,
-                                "%% Consumer [Poll] error: %s\n",
-                                rd_kafka_message_errstr(rkm));
+                                "Consumer [Poll] error: "+rd_kafka_message_errstr(rkm));
         }
 
         msgobj = Message_new0(self, rkm);
