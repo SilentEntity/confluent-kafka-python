@@ -1097,7 +1097,6 @@ static PyObject *Consumer_consume (Handle *self, PyObject *args,
 
         if (n < 0) {
                 free(rkmessages);
-                PyErr_Format(PyExc_RuntimeError, "Consumer [rd_kafka_consume_batch_queue] error: %s",rd_kafka_message_errstr(rkmessages));
                 return NULL;
         }
 
