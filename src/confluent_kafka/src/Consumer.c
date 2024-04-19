@@ -101,7 +101,8 @@ static int Consumer_traverse (Handle *self,
 
 static PyObject *Consumer_subscribe (Handle *self, PyObject *args,
 					 PyObject *kwargs) {
-
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_subscribe] started");
 	rd_kafka_topic_partition_list_t *topics;
 	static char *kws[] = { "topics", "on_assign", "on_revoke", "on_lost", NULL };
 	PyObject *tlist, *on_assign = NULL, *on_revoke = NULL, *on_lost = NULL;
@@ -199,14 +200,15 @@ static PyObject *Consumer_subscribe (Handle *self, PyObject *args,
 		self->u.Consumer.on_lost = on_lost;
 		Py_INCREF(self->u.Consumer.on_lost);
 	}
-
+        snprintf(buf, sizeof(buf),"[Consumer_subscribe] ended");
 	Py_RETURN_NONE;
 }
 
 
 static PyObject *Consumer_unsubscribe (Handle *self,
 					   PyObject *ignore) {
-
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_unsubscribe] started");
 	rd_kafka_resp_err_t err;
 
         if (!self->rk) {
@@ -222,7 +224,7 @@ static PyObject *Consumer_unsubscribe (Handle *self,
 				 rd_kafka_err2str(err));
 		return NULL;
 	}
-
+        snprintf(buf, sizeof(buf),"[Consumer_unsubscribe] ended");
 	Py_RETURN_NONE;
 }
 
@@ -257,6 +259,8 @@ static PyObject *Consumer_incremental_assign (Handle *self, PyObject *tlist) {
 
 static PyObject *Consumer_assign (Handle *self, PyObject *tlist) {
 
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_assign] started");
 	rd_kafka_topic_partition_list_t *c_parts;
 	rd_kafka_resp_err_t err;
 
@@ -281,13 +285,15 @@ static PyObject *Consumer_assign (Handle *self, PyObject *tlist) {
 				 rd_kafka_err2str(err));
 		return NULL;
 	}
-
+        snprintf(buf, sizeof(buf),"[Consumer_assign] ended");
 	Py_RETURN_NONE;
 }
 
 
 static PyObject *Consumer_unassign (Handle *self, PyObject *ignore) {
 
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_unassign] started");
 	rd_kafka_resp_err_t err;
 
         if (!self->rk) {
@@ -305,7 +311,7 @@ static PyObject *Consumer_unassign (Handle *self, PyObject *ignore) {
 				 rd_kafka_err2str(err));
 		return NULL;
 	}
-
+        snprintf(buf, sizeof(buf),"[Consumer_unassign] ended");
 	Py_RETURN_NONE;
 }
 
@@ -449,6 +455,8 @@ Consumer_offset_commit_return_cb (rd_kafka_t *rk, rd_kafka_resp_err_t err,
 
 static PyObject *Consumer_commit (Handle *self, PyObject *args,
                                   PyObject *kwargs) {
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_commit] started");
 	rd_kafka_resp_err_t err;
 	PyObject *msg = NULL, *offsets = NULL, *async_o = NULL;
 	rd_kafka_topic_partition_list_t *c_offsets;
@@ -551,7 +559,7 @@ static PyObject *Consumer_commit (Handle *self, PyObject *args,
                                  "Commit failed: %s", rd_kafka_err2str(err));
                 return NULL;
         }
-
+        snprintf(buf, sizeof(buf),"[Consumer_commit] ended");
         if (async) {
                 /* async commit returns None when commit is in progress */
                 Py_RETURN_NONE;
@@ -739,7 +747,8 @@ static PyObject *Consumer_position (Handle *self, PyObject *args,
 
 static PyObject *Consumer_pause(Handle *self, PyObject *args,
                     PyObject *kwargs) {
-
+    char buf[256];
+    snprintf(buf, sizeof(buf),"[Consumer_pause] started");
     PyObject *plist;
 	rd_kafka_topic_partition_list_t *c_parts;
     rd_kafka_resp_err_t err;
@@ -759,12 +768,14 @@ static PyObject *Consumer_pause(Handle *self, PyObject *args,
                 rd_kafka_err2str(err));
         return NULL;
     }
+        snprintf(buf, sizeof(buf),"[Consumer_pause] ended");
 	Py_RETURN_NONE;
 }
 
 static PyObject *Consumer_resume (Handle *self, PyObject *args,
                     PyObject *kwargs) {
-
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_resume] started");
     PyObject *plist;
 	rd_kafka_topic_partition_list_t *c_parts;
     rd_kafka_resp_err_t err;
@@ -783,7 +794,8 @@ static PyObject *Consumer_resume (Handle *self, PyObject *args,
                 "Failed to resume partitions: %s",
                 rd_kafka_err2str(err));
         return NULL;
-    }
+    }   
+        snprintf(buf, sizeof(buf),"[Consumer_resume] ended");
 	Py_RETURN_NONE;
 }
 
@@ -847,7 +859,8 @@ static PyObject *Consumer_seek (Handle *self, PyObject *args, PyObject *kwargs) 
 
 static PyObject *Consumer_get_watermark_offsets (Handle *self, PyObject *args,
                                                  PyObject *kwargs) {
-
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_get_watermark_offsets] started");
         TopicPartition *tp;
         rd_kafka_resp_err_t err;
         double tmout = -1.0f;
@@ -896,7 +909,7 @@ static PyObject *Consumer_get_watermark_offsets (Handle *self, PyObject *args,
         rtup = PyTuple_New(2);
         PyTuple_SetItem(rtup, 0, PyLong_FromLongLong(low));
         PyTuple_SetItem(rtup, 1, PyLong_FromLongLong(high));
-
+        snprintf(buf, sizeof(buf),"[Consumer_get_watermark_offsets] ended");
         return rtup;
 }
 
@@ -955,6 +968,8 @@ static PyObject *Consumer_offsets_for_times (Handle *self, PyObject *args,
 
 static PyObject *Consumer_poll (Handle *self, PyObject *args,
                                     PyObject *kwargs) {
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_poll] started");
         double tmout = -1.0f;
         static char *kws[] = { "timeout", NULL };
         rd_kafka_message_t *rkm;
@@ -991,8 +1006,7 @@ static PyObject *Consumer_poll (Handle *self, PyObject *args,
                 * try to recover from all types of errors. */
                 // fprintf(stderr, "%% Consumer error: %s\n",
                 // rd_kafka_message_errstr(rkm));
-                PyErr_SetString(PyExc_RuntimeError,
-                                "Consumer [Poll] error: "+rd_kafka_message_errstr(rkm));
+                PyErr_Format(PyExc_RuntimeError, "Consumer error: %s",rd_kafka_message_errstr(rkm));
         }
 
         msgobj = Message_new0(self, rkm);
@@ -1002,13 +1016,15 @@ static PyObject *Consumer_poll (Handle *self, PyObject *args,
         rd_kafka_message_detach_headers(rkm, &((Message *)msgobj)->c_headers);
 #endif
         rd_kafka_message_destroy(rkm);
-
+        snprintf(buf, sizeof(buf),"[Consumer_poll] ended");
         return msgobj;
 }
 
 
 static PyObject *Consumer_memberid (Handle *self, PyObject *args,
                                     PyObject *kwargs) {
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_memberid] started");
         char *memberid;
         PyObject *memberidobj;
         if (!self->rk) {
@@ -1029,13 +1045,15 @@ static PyObject *Consumer_memberid (Handle *self, PyObject *args,
 
         memberidobj = Py_BuildValue("s", memberid);
         rd_kafka_mem_free(self->rk, memberid);
-
+        snprintf(buf, sizeof(buf),"[Consumer_memberid] ended");
         return memberidobj;
 }
 
 
 static PyObject *Consumer_consume (Handle *self, PyObject *args,
                                         PyObject *kwargs) {
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_consume] started");
         unsigned int num_messages = 1;
         double tmout = -1.0f;
         static char *kws[] = { "num_messages", "timeout", NULL };
@@ -1079,14 +1097,18 @@ static PyObject *Consumer_consume (Handle *self, PyObject *args,
 
         if (n < 0) {
                 free(rkmessages);
-                cfl_PyErr_Format(rd_kafka_last_error(),
-                                 "Custom [rd_kafka_consume_batch_queue] Error %s", rd_kafka_err2str(rd_kafka_last_error()));
+                PyErr_Format(PyExc_RuntimeError, "Consumer [rd_kafka_consume_batch_queue] error: %s",rd_kafka_message_errstr(rkmessages));
                 return NULL;
         }
 
         msglist = PyList_New(n);
 
         for (i = 0; i < n; i++) {
+                if (rkmessages[i]->err){
+                        PyErr_Format(PyExc_RuntimeError, "Consumer [rkmessages] error: %s", rd_kafka_message_errstr(rkmessages));
+                        free(rkmessages);
+                        return NULL;
+                }
                 PyObject *msgobj = Message_new0(self, rkmessages[i]);
 #ifdef RD_KAFKA_V_HEADERS
                 /** Have to detach headers outside Message_new0 because it declares the
@@ -1098,12 +1120,15 @@ static PyObject *Consumer_consume (Handle *self, PyObject *args,
         }
 
         free(rkmessages);
+        snprintf(buf, sizeof(buf),"[Consumer_consume] ended");
 
         return msglist;
 }
 
 
 static PyObject *Consumer_close (Handle *self, PyObject *ignore) {
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_close] started");
         CallState cs;
 
         if (!self->rk)
@@ -1123,7 +1148,7 @@ static PyObject *Consumer_close (Handle *self, PyObject *ignore) {
 
         if (!CallState_end(self, &cs))
                 return NULL;
-
+        snprintf(buf, sizeof(buf),"[Consumer_close] ended");
         Py_RETURN_NONE;
 }
 
@@ -1516,6 +1541,8 @@ static PyMethodDef Consumer_methods[] = {
 static void Consumer_rebalance_cb (rd_kafka_t *rk, rd_kafka_resp_err_t err,
 				   rd_kafka_topic_partition_list_t *c_parts,
 				   void *opaque) {
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_rebalance_cb] started");
 	Handle *self = opaque;
 	CallState *cs;
         PyObject *cb;
@@ -1621,6 +1648,8 @@ static void Consumer_rebalance_cb (rd_kafka_t *rk, rd_kafka_resp_err_t err,
 
 
 static int Consumer_init (PyObject *selfobj, PyObject *args, PyObject *kwargs) {
+        char buf[256];
+        snprintf(buf, sizeof(buf),"[Consumer_init] started");
         Handle *self = (Handle *)selfobj;
         char errstr[256];
         rd_kafka_conf_t *conf;
@@ -1658,7 +1687,7 @@ static int Consumer_init (PyObject *selfobj, PyObject *args, PyObject *kwargs) {
 
         self->u.Consumer.rkqu = rd_kafka_queue_get_consumer(self->rk);
         assert(self->u.Consumer.rkqu);
-
+        snprintf(buf, sizeof(buf),"[Consumer_init] ended");
         return 0;
 }
 
