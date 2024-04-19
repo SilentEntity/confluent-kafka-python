@@ -1105,7 +1105,7 @@ static PyObject *Consumer_consume (Handle *self, PyObject *args,
 
         for (i = 0; i < n; i++) {
                 if (rkmessages[i]->err){
-                        PyErr_Format(PyExc_RuntimeError, "Consumer [rkmessages] error: %s", rd_kafka_message_errstr(rkmessages));
+                        PyErr_Format(PyExc_RuntimeError, "Consumer [rkmessages] error: %s", rd_kafka_message_errstr([rkmessages[i]]));
                         free(rkmessages);
                         return NULL;
                 }
