@@ -456,7 +456,10 @@ Consumer_offset_commit_return_cb (rd_kafka_t *rk, rd_kafka_resp_err_t err,
 static PyObject *Consumer_commit (Handle *self, PyObject *args,
                                   PyObject *kwargs) {
         char buf[256];
+        // Format the log message using snprintf
         snprintf(buf, sizeof(buf),"[Consumer_commit] started");
+        // Log the formatted message
+        printf("[ZX] %s", buf);
 	rd_kafka_resp_err_t err;
 	PyObject *msg = NULL, *offsets = NULL, *async_o = NULL;
 	rd_kafka_topic_partition_list_t *c_offsets;
@@ -559,7 +562,10 @@ static PyObject *Consumer_commit (Handle *self, PyObject *args,
                                  "Commit failed: %s", rd_kafka_err2str(err));
                 return NULL;
         }
+        // Format the log message using snprintf
         snprintf(buf, sizeof(buf),"[Consumer_commit] ended");
+        // Log the formatted message
+        printf("[ZX] %s", buf);
         if (async) {
                 /* async commit returns None when commit is in progress */
                 Py_RETURN_NONE;
