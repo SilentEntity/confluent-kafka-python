@@ -104,6 +104,7 @@ static void Common_logs (const char *buf){
         if (buf != NULL) {
                 time_t rawtime;
                 struct tm * timeinfo;
+                char timestamp[80];
                 time(&rawtime);
                 timeinfo = localtime(&rawtime);
                 strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", timeinfo);
