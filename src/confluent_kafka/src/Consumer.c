@@ -785,9 +785,6 @@ static PyObject *Consumer_position (Handle *self, PyObject *args,
 
 static PyObject *Consumer_pause(Handle *self, PyObject *args,
                     PyObject *kwargs) {
-    char *buf[128];
-    *buf = "[Consumer_pause] started";
-    Common_logs(*buf);
     PyObject *plist;
 	rd_kafka_topic_partition_list_t *c_parts;
     rd_kafka_resp_err_t err;
@@ -807,16 +804,11 @@ static PyObject *Consumer_pause(Handle *self, PyObject *args,
                 rd_kafka_err2str(err));
         return NULL;
     }
-        *buf = "[Consumer_pause] ended";
-        Common_logs(*buf);
 	Py_RETURN_NONE;
 }
 
 static PyObject *Consumer_resume (Handle *self, PyObject *args,
                     PyObject *kwargs) {
-        char *buf[128];
-        *buf = "[Consumer_resume] started";
-        Common_logs(*buf);
     PyObject *plist;
 	rd_kafka_topic_partition_list_t *c_parts;
     rd_kafka_resp_err_t err;
@@ -836,8 +828,6 @@ static PyObject *Consumer_resume (Handle *self, PyObject *args,
                 rd_kafka_err2str(err));
         return NULL;
     }   
-        *buf = "[Consumer_resume] ended";
-        Common_logs(*buf);
 	Py_RETURN_NONE;
 }
 
@@ -901,9 +891,6 @@ static PyObject *Consumer_seek (Handle *self, PyObject *args, PyObject *kwargs) 
 
 static PyObject *Consumer_get_watermark_offsets (Handle *self, PyObject *args,
                                                  PyObject *kwargs) {
-        char *buf[128];
-        *buf = "[Consumer_get_watermark_offsets] started";
-        Common_logs(*buf);
         TopicPartition *tp;
         rd_kafka_resp_err_t err;
         double tmout = -1.0f;
@@ -952,8 +939,6 @@ static PyObject *Consumer_get_watermark_offsets (Handle *self, PyObject *args,
         rtup = PyTuple_New(2);
         PyTuple_SetItem(rtup, 0, PyLong_FromLongLong(low));
         PyTuple_SetItem(rtup, 1, PyLong_FromLongLong(high));
-        *buf = "[Consumer_get_watermark_offsets] ended";
-        Common_logs(*buf);
         return rtup;
 }
 
@@ -1100,9 +1085,6 @@ static PyObject *Consumer_memberid (Handle *self, PyObject *args,
 
 static PyObject *Consumer_consume (Handle *self, PyObject *args,
                                         PyObject *kwargs) {
-        char *buf[128];
-        *buf = "[Consumer_consume] started";
-        Common_logs(*buf);
         unsigned int num_messages = 1;
         double tmout = -1.0f;
         static char *kws[] = { "num_messages", "timeout", NULL };
@@ -1168,8 +1150,6 @@ static PyObject *Consumer_consume (Handle *self, PyObject *args,
         }
 
         free(rkmessages);
-        *buf = "[Consumer_consumer] ended";
-        Common_logs(*buf);
 
         return msglist;
 }
@@ -1696,6 +1676,20 @@ static void Consumer_rebalance_cb (rd_kafka_t *rk, rd_kafka_resp_err_t err,
 }
 
 
+/* Error callback function */
+static void error_cb(rd_kafka_t *rk, int err, const char *reason, void *opaque) {
+    Handle *self = opaque;
+    CallState *cs;
+    cs = CallState_get(self);
+
+    /* Check if the error is related to broker connection failure */
+    if (err == RD_KAFKA_RESP_ERR__TRANSPORT) {
+        /* Handle connection failure by raising a Python exception */
+        cfl_PyErr_Format(err, "Failed to connect broker: %s", reason);
+        CallState_crash(cs);
+    }
+    CallState_resume(cs);
+}
 
 
 
@@ -1721,6 +1715,8 @@ static int Consumer_init (PyObject *selfobj, PyObject *args, PyObject *kwargs) {
 
         rd_kafka_conf_set_rebalance_cb(conf, Consumer_rebalance_cb);
         rd_kafka_conf_set_offset_commit_cb(conf, Consumer_offset_commit_cb);
+        /* Set error callback */
+        rd_kafka_conf_set_error_cb(conf, error_cb);
 
         self->rk = rd_kafka_new(RD_KAFKA_CONSUMER, conf,
                                 errstr, sizeof(errstr));
