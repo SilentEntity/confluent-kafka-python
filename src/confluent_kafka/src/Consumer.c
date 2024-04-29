@@ -1028,17 +1028,6 @@ static PyObject *Consumer_poll (Handle *self, PyObject *args,
         if (!rkm)
                 Py_RETURN_NONE;
 
-        /* consumer_poll() will return either a proper message
-        * or a consumer error (rkm->err is set). */
-        if (rkm->err) {
-                /* Consumer errors are generally to be considered
-                * informational as the consumer will automatically
-                * try to recover from all types of errors. */
-                // fprintf(stderr, "%% Consumer error: %s\n",
-                // rd_kafka_message_errstr(rkm));
-                PyErr_Format(PyExc_RuntimeError, "Consumer error: %s",rd_kafka_message_errstr(rkm));
-        }
-
         msgobj = Message_new0(self, rkm);
 #ifdef RD_KAFKA_V_HEADERS
         /** Have to detach headers outside Message_new0 because it declares the
@@ -1134,11 +1123,6 @@ static PyObject *Consumer_consume (Handle *self, PyObject *args,
         msglist = PyList_New(n);
 
         for (i = 0; i < n; i++) {
-                if (rkmessages[i]->err){
-                        PyErr_Format(PyExc_RuntimeError, "Consumer [rkmessages] error: %s", rd_kafka_message_errstr(rkmessages[i]));
-                        free(rkmessages);
-                        return NULL;
-                }
                 PyObject *msgobj = Message_new0(self, rkmessages[i]);
 #ifdef RD_KAFKA_V_HEADERS
                 /** Have to detach headers outside Message_new0 because it declares the
